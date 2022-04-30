@@ -43,7 +43,18 @@ FPS = 120
 
 racket1 = Player('racket1.png', 30, 200, 4, 12, 120)
 racket2 = Player('racket2.png', 550, 200, 4, 12, 120)
-ball = GameSprite('ball.png', 200, 200, 4, 50, 50)
+ball = GameSprite('ball.png', 200, 200, 4, 75, 75)
+
+speed_x = 3
+speed_y = 4
+
+score1 = 0
+score2 = 0
+
+font.init()
+font = font.Font(None, 35)
+score = font.render('0 : 0', True, (0, 0 ,0))
+lost = font.render('', True, (180, 0, 0))
 
 while game:
     for e in event.get():
@@ -54,9 +65,48 @@ while game:
         window.fill(back)
         racket1.update_l()
         racket2.update_r()
+        ball.rect.x += speed_x
+        ball.rect.y += speed_y
 
+        if sprite.collide_rect(racket1, ball) or sprite.collide_rect(racket2,ball):
+            speed_x *= -1
+            ball.rect.x += (5 * speed_x)
+
+        if ball.rect.y > win_height-50 or ball.rect.y <0:
+            speed_y *= -1
+
+        if ball.rect.x < 0:
+            score2 += 1
+            ball.rect.x, ball.rect.y = 200, 200
+            speed_x, speed_y = 3, 4
+
+        if ball.rect.x > win_width - 50:
+            score1 += 1
+            ball.rect.x, ball.rect.y = 200, 200
+            speed_x, speed_y = 3, 4
+
+        score = font.render(f'{score1} : {score2}', True, (0, 0 ,0))
+        window.blit(score, (290, 0))
         racket1.reset()
         racket2.reset()
+        ball.reset()
+
+        if score1 > 9:
+            lost = font.render('Player 2 lost!', True, (180, 0, 0))
+            finish = True
+            window.blit(lost, (250, 200))
+        if score2 > 9:
+            lost = font.render('Player 1 lost!', True, (180, 0, 0))
+            finish = True
+            window.blit(lost, (250, 200))
+    else:
+        finish = False
+        time.delay(3000)
+        ball.rect.x, ball.rect.y = 200, 200
+        speed_x, speed_y = 3, 4
+        score1, score2 = 0, 0
+        racket1.rect.x, racket1.rect.y = 30, 200
+        racket2.rect.x, racket1.rect.y = 550, 200
 
     display.update()
     clock.tick(FPS)
